@@ -1,0 +1,5 @@
+node_modules/
+checkout/
+.env
+.env.local
+.vercel
