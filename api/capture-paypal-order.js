@@ -2,6 +2,7 @@ import { paypalFetch } from "./_lib/paypal.js";
 import { getProduct } from "./_lib/catalog.js";
 import { validateCheckoutInput } from "./_lib/validate.js";
 import { getSupabaseAdmin } from "./_lib/supabase.js";
+import { sendOrderEmails } from "./_lib/email.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -96,6 +97,23 @@ export default async function handler(req, res) {
         error: "Payment captured but failed to save order. Contact support.",
         paypalCaptureId: captureRecord.id,
       });
+    }
+
+    // Email failures must never turn an already-successful, already-saved
+    // order into an error response for the customer.
+    try {
+      await sendOrderEmails({
+        name: input.name,
+        email: input.email,
+        productName: product.name,
+        amount: capturedAmount.value,
+        currency: capturedAmount.currency_code,
+        address: input.address,
+        paypalOrderId: capture.id,
+        paypalCaptureId: captureRecord.id,
+      });
+    } catch (emailErr) {
+      console.error("sendOrderEmails failed:", emailErr);
     }
 
     return res.status(200).json({ success: true, orderId: dbOrder.id });

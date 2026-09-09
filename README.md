@@ -16,12 +16,20 @@ client) and, once PayPal confirms the capture, insert the order into
 Supabase (`api/_lib/supabase.js`, using the service-role key — never
 exposed to the browser).
 
+After a successful, verified capture, `api/_lib/email.js` sends order
+confirmation emails via Resend — one to the customer, and (if
+`MERCHANT_NOTIFICATION_EMAIL` is set) one to you as a new-order alert. If
+`RESEND_API_KEY`/`ORDER_FROM_EMAIL` aren't configured, this step is skipped
+without failing the checkout — the order is already captured and saved by
+that point either way.
+
 Before this works you need to:
 1. Copy `.env.example` to `.env` locally, and set the same variables as
    Environment Variables on the Vercel project (Settings → Environment
    Variables) — `PAYPAL_CLIENT_ID`/`PAYPAL_SECRET` from a PayPal REST app
-   at developer.paypal.com, and `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`
-   from your Supabase project's API settings.
+   at developer.paypal.com, `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`
+   from your Supabase project's API settings, and `RESEND_API_KEY` from
+   resend.com (`ORDER_FROM_EMAIL` must be on a domain verified in Resend).
 2. Run `supabase/schema.sql` in the Supabase SQL editor to create the
    `orders` table.
 3. Switch `PAYPAL_API_BASE` from the sandbox to `https://api-m.paypal.com`
