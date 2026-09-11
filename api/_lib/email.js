@@ -61,11 +61,13 @@ export async function sendOrderEmails(order) {
   }
 
   const resend = new Resend(apiKey);
+  const replyTo = process.env.SUPPORT_EMAIL || undefined;
 
   const sends = [
     resend.emails.send({
       from: fromEmail,
       to: order.email,
+      replyTo,
       subject: `Your Gamma-7 order — ${order.productName}`,
       html: customerEmailHtml(order),
     }),
