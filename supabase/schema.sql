@@ -1,10 +1,12 @@
 -- Run this in the Supabase SQL editor (or via the CLI) before going live.
+-- If you already ran an earlier version of this file, run
+-- supabase/migrations/002_multi_item_cart.sql instead — this file is only
+-- for a brand-new database.
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   paypal_order_id text not null unique,
   paypal_capture_id text not null unique,
-  product_id text not null,
-  product_name text not null,
+  items jsonb not null,
   amount numeric(10, 2) not null,
   currency text not null,
   customer_name text not null,

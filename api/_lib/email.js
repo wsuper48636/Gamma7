@@ -8,15 +8,27 @@ function money(amount, currency) {
   return `${currency} $${Number(amount).toFixed(2)}`;
 }
 
-function customerEmailHtml({ name, productName, amount, currency, address, paypalOrderId }) {
+function itemsRows(items, currency) {
+  return items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding: 4px 0; color: #374151;">${item.productName} × ${item.quantity}</td>
+          <td style="padding: 4px 0; text-align: right;">${money(item.lineTotal, currency)}</td>
+        </tr>`
+    )
+    .join("");
+}
+
+function customerEmailHtml({ name, items, amount, currency, address, paypalOrderId }) {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto;">
       <h2 style="color: #80bb03;">Thanks for your order, ${name}!</h2>
-      <p>Your payment for <strong>${productName}</strong> (${money(amount, currency)}) has been received.</p>
+      <p>Your payment has been received.</p>
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr><td style="padding: 4px 0; color: #6b7280;">Order reference</td><td style="padding: 4px 0; text-align: right;">${paypalOrderId}</td></tr>
-        <tr><td style="padding: 4px 0; color: #6b7280;">Product</td><td style="padding: 4px 0; text-align: right;">${productName}</td></tr>
-        <tr><td style="padding: 4px 0; color: #6b7280;">Amount</td><td style="padding: 4px 0; text-align: right;">${money(amount, currency)}</td></tr>
+        ${itemsRows(items, currency)}
+        <tr><td style="padding: 8px 0 0; font-weight: 600;">Total</td><td style="padding: 8px 0 0; text-align: right; font-weight: 600;">${money(amount, currency)}</td></tr>
       </table>
       <p style="color: #6b7280;">Shipping to:<br/>
         ${address.line1}${address.line2 ? `<br/>${address.line2}` : ""}<br/>
@@ -28,14 +40,15 @@ function customerEmailHtml({ name, productName, amount, currency, address, paypa
   `;
 }
 
-function merchantEmailHtml({ name, email, productName, amount, currency, address, paypalOrderId, paypalCaptureId }) {
+function merchantEmailHtml({ name, email, items, amount, currency, address, paypalOrderId, paypalCaptureId }) {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>New order: ${productName}</h2>
+      <h2>New order (${money(amount, currency)})</h2>
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr><td style="padding: 4px 0; color: #6b7280;">Customer</td><td style="padding: 4px 0; text-align: right;">${name}</td></tr>
         <tr><td style="padding: 4px 0; color: #6b7280;">Email</td><td style="padding: 4px 0; text-align: right;">${email}</td></tr>
-        <tr><td style="padding: 4px 0; color: #6b7280;">Amount</td><td style="padding: 4px 0; text-align: right;">${money(amount, currency)}</td></tr>
+        ${itemsRows(items, currency)}
+        <tr><td style="padding: 8px 0 0; font-weight: 600;">Total</td><td style="padding: 8px 0 0; text-align: right; font-weight: 600;">${money(amount, currency)}</td></tr>
         <tr><td style="padding: 4px 0; color: #6b7280;">PayPal order</td><td style="padding: 4px 0; text-align: right;">${paypalOrderId}</td></tr>
         <tr><td style="padding: 4px 0; color: #6b7280;">PayPal capture</td><td style="padding: 4px 0; text-align: right;">${paypalCaptureId}</td></tr>
       </table>
@@ -68,7 +81,7 @@ export async function sendOrderEmails(order) {
       from: fromEmail,
       to: order.email,
       replyTo,
-      subject: `Your Gamma-7 order — ${order.productName}`,
+      subject: `Your Gamma-7 order — ${money(order.amount, order.currency)}`,
       html: customerEmailHtml(order),
     }),
   ];
@@ -78,7 +91,7 @@ export async function sendOrderEmails(order) {
       resend.emails.send({
         from: fromEmail,
         to: merchantEmail,
-        subject: `New order: ${order.productName} (${money(order.amount, order.currency)})`,
+        subject: `New order (${money(order.amount, order.currency)})`,
         html: merchantEmailHtml(order),
       })
     );

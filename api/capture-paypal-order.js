@@ -1,5 +1,5 @@
 import { paypalFetch } from "./_lib/paypal.js";
-import { getProduct } from "./_lib/catalog.js";
+import { priceCart } from "./_lib/catalog.js";
 import { validateCheckoutInput } from "./_lib/validate.js";
 import { getSupabaseAdmin } from "./_lib/supabase.js";
 import { sendOrderEmails } from "./_lib/email.js";
@@ -22,9 +22,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: err.message });
   }
 
-  const product = getProduct(input.productId);
-  if (!product) {
-    return res.status(400).json({ error: "Unknown productId" });
+  let cart;
+  try {
+    cart = priceCart(req.body && req.body.items);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
   }
 
   try {
@@ -44,18 +46,18 @@ export default async function handler(req, res) {
       });
     }
 
-    // Verify the amount PayPal actually captured matches our own catalog
-    // price for the product — never trust the client's own claim of what
+    // Verify the amount PayPal actually captured matches our own
+    // recomputed cart total — never trust the client's own claim of what
     // was paid, even after a successful capture.
     const capturedAmount = captureRecord.amount;
     if (
       !capturedAmount ||
-      capturedAmount.value !== product.price ||
-      capturedAmount.currency_code !== "AUD"
+      capturedAmount.value !== cart.total ||
+      capturedAmount.currency_code !== cart.currency
     ) {
       console.error("Captured amount mismatch", {
         orderID,
-        expected: product.price,
+        expected: cart.total,
         got: capturedAmount,
       });
       return res.status(402).json({ error: "Captured amount does not match order" });
@@ -67,8 +69,7 @@ export default async function handler(req, res) {
       .insert({
         paypal_order_id: capture.id,
         paypal_capture_id: captureRecord.id,
-        product_id: input.productId,
-        product_name: product.name,
+        items: cart.items,
         amount: capturedAmount.value,
         currency: capturedAmount.currency_code,
         customer_name: input.name,
@@ -105,7 +106,7 @@ export default async function handler(req, res) {
       await sendOrderEmails({
         name: input.name,
         email: input.email,
-        productName: product.name,
+        items: cart.items,
         amount: capturedAmount.value,
         currency: capturedAmount.currency_code,
         address: input.address,

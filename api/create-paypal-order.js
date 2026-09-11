@@ -1,5 +1,5 @@
 import { paypalFetch } from "./_lib/paypal.js";
-import { getProduct, CURRENCY } from "./_lib/catalog.js";
+import { priceCart } from "./_lib/catalog.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,27 +7,35 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  let cart;
   try {
-    const { productId } = req.body || {};
-    const product = getProduct(productId);
-    if (!product) {
-      return res.status(400).json({ error: "Unknown productId" });
-    }
+    cart = priceCart(req.body && req.body.items);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
 
-    // Price comes from our own catalog, never from the client, so a
-    // tampered request can't check out at an arbitrary amount.
+  try {
+    // Price, names, and total all come from our own catalog (priceCart),
+    // never from the client, so a tampered request can't check out at an
+    // arbitrary amount.
     const order = await paypalFetch("/v2/checkout/orders", {
       method: "POST",
       body: {
         intent: "CAPTURE",
         purchase_units: [
           {
-            description: product.name,
-            custom_id: productId,
             amount: {
-              currency_code: CURRENCY,
-              value: product.price,
+              currency_code: cart.currency,
+              value: cart.total,
+              breakdown: {
+                item_total: { currency_code: cart.currency, value: cart.total },
+              },
             },
+            items: cart.items.map((item) => ({
+              name: item.productName,
+              quantity: String(item.quantity),
+              unit_amount: { currency_code: cart.currency, value: item.unitPrice },
+            })),
           },
         ],
       },

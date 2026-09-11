@@ -3,12 +3,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Basic server-side validation. Throws a descriptive Error on failure —
 // callers turn that into a 400 response. Keeps the client-side form
 // validation honest instead of trusting it.
-export function validateCheckoutInput({ productId, customer } = {}) {
+export function validateCheckoutInput({ customer } = {}) {
   const errors = [];
-
-  if (!productId || typeof productId !== "string") {
-    errors.push("productId is required");
-  }
 
   const c = customer || {};
   if (!c.name || typeof c.name !== "string" || c.name.trim().length < 2) {
@@ -31,7 +27,6 @@ export function validateCheckoutInput({ productId, customer } = {}) {
   }
 
   return {
-    productId,
     name: c.name.trim(),
     email: c.email.trim().toLowerCase(),
     address: {

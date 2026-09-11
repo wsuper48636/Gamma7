@@ -114,6 +114,96 @@ body {
   color: var(--primary);
 }
 
+.checkout-cart {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.checkout-cart-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.checkout-cart-name {
+  font-weight: 600;
+}
+
+.checkout-cart-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkout-qty-input {
+  width: 3.5rem;
+  border: 1px solid var(--border);
+  background: var(--input);
+  border-radius: var(--radius);
+  padding: 0.375rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.checkout-cart-price {
+  font-weight: 600;
+  min-width: 5.5rem;
+  text-align: right;
+}
+
+.checkout-remove-btn {
+  background: none;
+  border: none;
+  color: var(--destructive);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.checkout-add-product {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 1rem;
+}
+
+.checkout-add-product select {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--input);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.checkout-add-product button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checkout-cart-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 .checkout-form {
   display: grid;
   gap: 1rem;
