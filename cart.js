@@ -52,4 +52,23 @@
   document.addEventListener("DOMContentLoaded", function () {
     updateBadges(read());
   });
+
+  // Delegated click handling for nav/add-to-cart buttons on pages that a
+  // hydrating React app also controls. A plain onclick="" attribute on
+  // one of those elements can be silently wiped the next time React
+  // re-renders that node (it only preserves attributes it manages
+  // itself) — a listener attached here, at the document level, is never
+  // touched by that re-render regardless of how many times it happens.
+  document.addEventListener("click", function (e) {
+    var navBtn = e.target.closest("[data-nav-link]");
+    if (navBtn) {
+      window.location.href = navBtn.getAttribute("data-nav-link");
+      return;
+    }
+    var addBtn = e.target.closest("[data-add-to-cart]");
+    if (addBtn) {
+      add(addBtn.getAttribute("data-add-to-cart"));
+      window.location.href = "/checkout/";
+    }
+  });
 })();
