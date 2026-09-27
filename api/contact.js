@@ -39,22 +39,27 @@ export default async function handler(req, res) {
   if (!message || typeof message !== "string" || message.trim().length < 5) {
     errors.push("Message is too short");
   }
-  if (!turnstileToken || typeof turnstileToken !== "string") {
-    errors.push("CAPTCHA verification is required");
-  }
   if (errors.length) {
     return res.status(400).json({ error: errors.join("; ") });
   }
 
-  try {
-    const remoteIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim();
-    const captchaOk = await verifyTurnstile(turnstileToken, remoteIp);
-    if (!captchaOk) {
-      return res.status(400).json({ error: "CAPTCHA verification failed. Please try again." });
+  // Skip verification entirely until TURNSTILE_SECRET_KEY is configured
+  // (matches the site key not being set yet on the contact page) rather
+  // than blocking every submission on a CAPTCHA that isn't live.
+  if (process.env.TURNSTILE_SECRET_KEY) {
+    if (!turnstileToken || typeof turnstileToken !== "string") {
+      return res.status(400).json({ error: "CAPTCHA verification is required" });
     }
-  } catch (err) {
-    console.error("Turnstile verification failed:", err);
-    return res.status(500).json({ error: "Could not verify CAPTCHA. Please try again later." });
+    try {
+      const remoteIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim();
+      const captchaOk = await verifyTurnstile(turnstileToken, remoteIp);
+      if (!captchaOk) {
+        return res.status(400).json({ error: "CAPTCHA verification failed. Please try again." });
+      }
+    } catch (err) {
+      console.error("Turnstile verification failed:", err);
+      return res.status(500).json({ error: "Could not verify CAPTCHA. Please try again later." });
+    }
   }
 
   const apiKey = process.env.RESEND_API_KEY;
