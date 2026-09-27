@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us — Gamma-7</title>
+  <meta name="description" content="Get in touch with the Gamma-7 team." />
+  <link rel="stylesheet" href="/legal-pages.css" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a href="/" class="site-nav-brand">
+        <span class="site-nav-icon">🛡</span>
+        <span>Gamma-7</span>
+      </a>
+      <div class="site-nav-links">
+        <a href="/">Home</a>
+        <a href="/products">Products</a>
+        <a href="/about">About</a>
+        <a href="/scientific-verification">Scientific Verification</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="legal-page">
+    <h1 class="legal-title">Contact Us</h1>
+    <p class="legal-updated">We usually reply within 1–2 business days.</p>
+
+    <p>Have a question about an order, a product, or anything else? Send us a message below, or email us directly at <a href="mailto:support@gamma7.online">support@gamma7.online</a> / call <a href="tel:+61439488684">+61 439 488 684</a>.</p>
+
+    <form id="contact-form" class="contact-form">
+      <div class="contact-field">
+        <label for="name">Full name</label>
+        <input id="name" name="name" required autocomplete="name" />
+      </div>
+      <div class="contact-field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+      </div>
+      <div class="contact-field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+      </div>
+
+      <!--
+        Cloudflare Turnstile (free CAPTCHA). Sign up at
+        https://dash.cloudflare.com/?to=/:account/turnstile and replace
+        YOUR_TURNSTILE_SITE_KEY below with your real site key. The matching
+        secret key goes in the TURNSTILE_SECRET_KEY environment variable
+        on Vercel (used by api/contact.js to verify submissions).
+      -->
+      <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY"></div>
+
+      <button type="submit" class="contact-submit" id="contact-submit">Send message</button>
+    </form>
+
+    <div id="contact-result"></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Gamma-7. All rights reserved. Protecting your health since 1990.</p>
+    <p>
+      <a href="/terms">Terms of Service</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/contact">Contact</a>
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      var form = document.getElementById("contact-form");
+      var submitBtn = document.getElementById("contact-submit");
+      var resultBox = document.getElementById("contact-result");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        resultBox.innerHTML = "";
+
+        var name = document.getElementById("name").value.trim();
+        var email = document.getElementById("email").value.trim();
+        var message = document.getElementById("message").value.trim();
+        var turnstileToken = (form.querySelector('[name="cf-turnstile-response"]') || {}).value;
+
+        if (!turnstileToken) {
+          resultBox.innerHTML = '<div class="contact-message error">Please complete the CAPTCHA before sending.</div>';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending...";
+
+        fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name, email: email, message: message, turnstileToken: turnstileToken }),
+        })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              return { ok: res.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              resultBox.innerHTML = '<div class="contact-message success">Thanks, ' + name.split(" ")[0] + "! Your message has been sent — we'll get back to you soon.</div>";
+              form.reset();
+              if (window.turnstile) window.turnstile.reset();
+            } else {
+              resultBox.innerHTML = '<div class="contact-message error">' + (result.data.error || "Something went wrong. Please try again.") + "</div>";
+              if (window.turnstile) window.turnstile.reset();
+            }
+          })
+          .catch(function () {
+            resultBox.innerHTML = '<div class="contact-message error">Something went wrong. Please try again.</div>';
+            if (window.turnstile) window.turnstile.reset();
+          })
+          .finally(function () {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send message";
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
