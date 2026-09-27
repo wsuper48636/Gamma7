@@ -79,9 +79,21 @@ export default function Checkout() {
     [items]
   );
 
-  const total = useMemo(
+  const subtotal = useMemo(
     () => pricedItems.reduce((sum, i) => sum + Number(i.lineTotal), 0).toFixed(2),
     [pricedItems]
+  );
+
+  const shipping = useMemo(() => {
+    if (Number(subtotal) >= 500) return "0.00";
+    const country = address.country.trim().toUpperCase();
+    const isAustralia = country === "AU" || country === "AUS" || country === "AUSTRALIA";
+    return isAustralia ? "14.99" : "34.99";
+  }, [subtotal, address.country]);
+
+  const total = useMemo(
+    () => (Number(subtotal) + Number(shipping)).toFixed(2),
+    [subtotal, shipping]
   );
 
   const isFormValid = useMemo(() => {
@@ -193,6 +205,21 @@ export default function Checkout() {
             </button>
           </div>
 
+          <div className="checkout-cart-row" style={{ border: "none" }}>
+            <div>Subtotal</div>
+            <div>
+              {CURRENCY} ${subtotal}
+            </div>
+          </div>
+          <div className="checkout-cart-row" style={{ border: "none" }}>
+            <div>
+              Shipping
+              {Number(shipping) === 0 ? " (free over $500)" : address.country.trim().toUpperCase() === "AU" ? " (Australia)" : " (international)"}
+            </div>
+            <div>
+              {Number(shipping) === 0 ? "Free" : `${CURRENCY} $${shipping}`}
+            </div>
+          </div>
           <div className="checkout-cart-total">
             <span>Total</span>
             <span>
@@ -293,7 +320,7 @@ export default function Checkout() {
             const res = await fetch("/api/create-paypal-order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ items }),
+              body: JSON.stringify({ items, customer: { name, email, address } }),
             });
             const data = await res.json();
             if (!res.ok) {

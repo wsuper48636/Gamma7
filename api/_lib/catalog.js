@@ -15,11 +15,27 @@ export function getProduct(productId) {
 
 const MAX_QUANTITY_PER_ITEM = 20;
 
+const SHIPPING_AU = "14.99";
+const SHIPPING_INTL = "34.99";
+const FREE_SHIPPING_THRESHOLD = 500;
+
+// Flat-rate shipping: free over $500, $14.99 within Australia, $34.99
+// everywhere else. Computed server-side alongside the cart total so a
+// client can never manipulate the shipping charge either.
+export function calculateShipping(subtotal, country) {
+  if (Number(subtotal) >= FREE_SHIPPING_THRESHOLD) {
+    return "0.00";
+  }
+  const normalized = String(country || "").trim().toUpperCase();
+  const isAustralia = normalized === "AU" || normalized === "AUS" || normalized === "AUSTRALIA";
+  return isAustralia ? SHIPPING_AU : SHIPPING_INTL;
+}
+
 // Validates a client-submitted cart and recomputes it entirely from our
 // own catalog — product names, unit prices, and the total are all derived
 // server-side. The client's job is only to say *which* products and *how
 // many*; it never gets to say what anything costs.
-export function priceCart(items) {
+export function priceCart(items, country) {
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error("Cart is empty");
   }
@@ -54,9 +70,12 @@ export function priceCart(items) {
     };
   });
 
-  const total = priced
+  const subtotal = priced
     .reduce((sum, item) => sum + Number(item.lineTotal), 0)
     .toFixed(2);
 
-  return { items: priced, total, currency: CURRENCY };
+  const shipping = calculateShipping(subtotal, country);
+  const total = (Number(subtotal) + Number(shipping)).toFixed(2);
+
+  return { items: priced, subtotal, shipping, total, currency: CURRENCY };
 }

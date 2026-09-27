@@ -7,17 +7,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const country = req.body && req.body.customer && req.body.customer.address
+    ? req.body.customer.address.country
+    : undefined;
+
   let cart;
   try {
-    cart = priceCart(req.body && req.body.items);
+    cart = priceCart(req.body && req.body.items, country);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 
   try {
-    // Price, names, and total all come from our own catalog (priceCart),
-    // never from the client, so a tampered request can't check out at an
-    // arbitrary amount.
+    // Price, names, shipping, and total all come from our own catalog
+    // (priceCart), never from the client, so a tampered request can't
+    // check out at an arbitrary amount.
     const order = await paypalFetch("/v2/checkout/orders", {
       method: "POST",
       body: {
@@ -28,7 +32,8 @@ export default async function handler(req, res) {
               currency_code: cart.currency,
               value: cart.total,
               breakdown: {
-                item_total: { currency_code: cart.currency, value: cart.total },
+                item_total: { currency_code: cart.currency, value: cart.subtotal },
+                shipping: { currency_code: cart.currency, value: cart.shipping },
               },
             },
             items: cart.items.map((item) => ({
