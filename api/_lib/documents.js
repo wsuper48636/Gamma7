@@ -10,6 +10,14 @@ export const DOCUMENT_SLOTS = {
     label: "Does Radiofrequency Radiation Impact Sleep? (RMIT University, 2024)",
     path: "study-sleep-rmit-2024.pdf",
   },
+  "study-dna-ntp-2020": {
+    label: "RFR Genotoxicity Study (US National Toxicology Program, 2020)",
+    path: "study-dna-ntp-2020.pdf",
+  },
+  "study-dna-evidence-map-2025": {
+    label: "RFR and DNA Damage Evidence Map (Griffith University, 2025)",
+    path: "study-dna-evidence-map-2025.pdf",
+  },
   "complete-research-summary": {
     label: "Complete Research Summary",
     path: "complete-research-summary.pdf",
