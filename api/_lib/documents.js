@@ -18,6 +18,14 @@ export const DOCUMENT_SLOTS = {
     label: "RFR and DNA Damage Evidence Map (Griffith University, 2025)",
     path: "study-dna-evidence-map-2025.pdf",
   },
+  "study-huss-2007": {
+    label: "Huss et al., Source of Funding and Results of Studies (2007)",
+    path: "study-huss-2007.pdf",
+  },
+  "study-starkey-2016": {
+    label: "Starkey, Inconsistencies in UK EMF Exposure Guidance (2016)",
+    path: "study-starkey-2016.pdf",
+  },
   "complete-research-summary": {
     label: "Complete Research Summary",
     path: "complete-research-summary.pdf",
