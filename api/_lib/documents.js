@@ -6,6 +6,10 @@
 export const BUCKET = "documents";
 
 export const DOCUMENT_SLOTS = {
+  "study-sleep-rmit-2024": {
+    label: "Does Radiofrequency Radiation Impact Sleep? (RMIT University, 2024)",
+    path: "study-sleep-rmit-2024.pdf",
+  },
   "complete-research-summary": {
     label: "Complete Research Summary",
     path: "complete-research-summary.pdf",
