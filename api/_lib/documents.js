@@ -1,7 +1,7 @@
 // Fixed-path document "slots" used by the self-serve upload feature.
 // Each slot always lives at the same storage path regardless of what the
 // uploaded file was originally named, so public links to it (the
-// Download buttons on scientific-verification, the certificate link on
+// Download buttons on research-results, the certificate link on
 // about) can be hardcoded before anything has ever been uploaded.
 export const BUCKET = "documents";
 
