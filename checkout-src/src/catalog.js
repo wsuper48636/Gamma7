@@ -7,6 +7,10 @@ export const PRODUCTS = {
   neutraliser: { name: "Neutraliser", price: "295.00" },
   activator: { name: "Activator", price: "359.00" },
   "rt-phone-neutraliser": { name: "RT Phone Neutraliser", price: "160.00" },
+  "set-complete-protection": {
+    name: "Set: RT Phone Neutraliser + Neutraliser + Activator",
+    price: "789.00",
+  },
 };
 
 export function getProduct(productId) {

@@ -67,10 +67,7 @@
     }
     var addBtn = e.target.closest("[data-add-to-cart]");
     if (addBtn) {
-      var ids = addBtn.getAttribute("data-add-to-cart").split(",");
-      for (var i = 0; i < ids.length; i++) {
-        add(ids[i].trim());
-      }
+      add(addBtn.getAttribute("data-add-to-cart"));
       window.location.href = "/checkout/";
     }
   });
