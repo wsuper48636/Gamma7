@@ -11,7 +11,25 @@ export const PRODUCTS = {
     name: "Set: RT Phone Neutraliser + Neutraliser + Activator",
     price: "789.00",
   },
+  "energy-diagnostics": {
+    name: "Diagnostics of your energy field",
+    price: "0.00",
+    description:
+      "During your energy field assessment, we will explore key areas such as your life such as life purpose, relationships, and energy drains - identifying actionable steps to bring balance and improvement to your life.",
+  },
 };
+
+// Sum of the individual prices of the products bundled in the Set, used
+// to show the discount it represents versus buying them separately.
+export const SET_PRODUCT_ID = "set-complete-protection";
+export const SET_COMPONENT_IDS = ["neutraliser", "activator", "rt-phone-neutraliser"];
+export const SET_SAVINGS = (
+  SET_COMPONENT_IDS.reduce((sum, id) => sum + Number(PRODUCTS[id].price), 0) -
+  Number(PRODUCTS[SET_PRODUCT_ID].price)
+).toFixed(2);
+
+// Free gift automatically bundled in the cart whenever the Set is present.
+export const SET_GIFT_PRODUCT_ID = "energy-diagnostics";
 
 export function getProduct(productId) {
   return PRODUCTS[productId] || null;

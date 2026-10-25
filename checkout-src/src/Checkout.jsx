@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { PRODUCTS, getProduct, CURRENCY } from "./catalog";
+import {
+  PRODUCTS,
+  getProduct,
+  CURRENCY,
+  SET_PRODUCT_ID,
+  SET_SAVINGS,
+  SET_GIFT_PRODUCT_ID,
+} from "./catalog";
 
 const CART_KEY = "gamma7_cart";
 const EMPTY_ADDRESS = {
@@ -61,6 +68,25 @@ export default function Checkout() {
     writeCart(items);
   }, [items]);
 
+  // The Set bundle comes with a free "Diagnostics of your energy field"
+  // gift. Keep it in sync with the Set's presence: add it the moment the
+  // Set lands in the cart, drop it the moment the Set is removed.
+  useEffect(() => {
+    setItems((prev) => {
+      const hasSet = prev.some((i) => i.productId === SET_PRODUCT_ID);
+      const hasGift = prev.some((i) => i.productId === SET_GIFT_PRODUCT_ID);
+      if (hasSet && !hasGift) {
+        return addToCart(prev, SET_GIFT_PRODUCT_ID, 1);
+      }
+      if (!hasSet && hasGift) {
+        return prev.filter((i) => i.productId !== SET_GIFT_PRODUCT_ID);
+      }
+      return prev;
+    });
+  }, [items]);
+
+  const hasSet = items.some((i) => i.productId === SET_PRODUCT_ID);
+
   const pricedItems = useMemo(
     () =>
       items
@@ -70,6 +96,7 @@ export default function Checkout() {
           return {
             productId: i.productId,
             name: product.name,
+            description: product.description,
             quantity: i.quantity,
             unitPrice: product.price,
             lineTotal: (Number(product.price) * i.quantity).toFixed(2),
@@ -160,51 +187,86 @@ export default function Checkout() {
         </div>
       ) : (
         <div className="checkout-cart">
-          {pricedItems.map((item) => (
-            <div className="checkout-cart-row" key={item.productId}>
-              <div className="checkout-cart-name">{item.name}</div>
-              <div className="checkout-cart-controls">
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    updateQuantity(item.productId, parseInt(e.target.value, 10) || 0)
-                  }
-                  className="checkout-qty-input"
-                />
-                <div className="checkout-cart-price">
-                  {CURRENCY} ${item.lineTotal}
+          {pricedItems.map((item) => {
+            const isGift = item.productId === SET_GIFT_PRODUCT_ID;
+            return (
+              <div className="checkout-cart-row" key={item.productId}>
+                <div>
+                  <div className="checkout-cart-name">
+                    {item.name}
+                    {isGift && (
+                      <span style={{ marginLeft: 8, color: "#16a34a", fontWeight: 600 }}>
+                        FREE gift with your Set
+                      </span>
+                    )}
+                  </div>
+                  {isGift && item.description && (
+                    <p style={{ margin: "4px 0 0", fontSize: "0.85em", color: "#666" }}>
+                      {item.description}
+                    </p>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  className="checkout-remove-btn"
-                  onClick={() => removeItem(item.productId)}
-                  aria-label={`Remove ${item.name}`}
-                >
-                  Remove
-                </button>
+                <div className="checkout-cart-controls">
+                  {isGift ? (
+                    <div className="checkout-cart-price">Free</div>
+                  ) : (
+                    <>
+                      <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateQuantity(item.productId, parseInt(e.target.value, 10) || 0)
+                        }
+                        className="checkout-qty-input"
+                      />
+                      <div className="checkout-cart-price">
+                        {CURRENCY} ${item.lineTotal}
+                      </div>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="checkout-remove-btn"
+                    onClick={() => removeItem(item.productId)}
+                    aria-label={`Remove ${item.name}`}
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <div className="checkout-add-product">
             <select
               value={addProductId}
               onChange={(e) => setAddProductId(e.target.value)}
             >
-              {Object.entries(PRODUCTS).map(([id, p]) => (
-                <option key={id} value={id}>
-                  {p.name} — {CURRENCY} ${p.price}
-                </option>
-              ))}
+              {Object.entries(PRODUCTS)
+                .filter(([id]) => id !== SET_GIFT_PRODUCT_ID)
+                .map(([id, p]) => (
+                  <option key={id} value={id}>
+                    {p.name} — {CURRENCY} ${p.price}
+                  </option>
+                ))}
             </select>
             <button type="button" onClick={handleAddProduct}>
               Add another product
             </button>
           </div>
 
+          {hasSet && (
+            <div className="checkout-cart-row" style={{ border: "none" }}>
+              <div style={{ color: "#dc2626", fontWeight: 600 }}>
+                You saved by buying the Set
+              </div>
+              <div style={{ color: "#dc2626", fontWeight: 600 }}>
+                -{CURRENCY} ${SET_SAVINGS}
+              </div>
+            </div>
+          )}
           <div className="checkout-cart-row" style={{ border: "none" }}>
             <div>Subtotal</div>
             <div>
