@@ -5,7 +5,6 @@ import {
   getProduct,
   CURRENCY,
   SET_PRODUCT_ID,
-  SET_SAVINGS,
   SET_GIFT_PRODUCT_ID,
 } from "./catalog";
 
@@ -84,8 +83,6 @@ export default function Checkout() {
       return prev;
     });
   }, [items]);
-
-  const hasSet = items.some((i) => i.productId === SET_PRODUCT_ID);
 
   const pricedItems = useMemo(
     () =>
@@ -257,16 +254,6 @@ export default function Checkout() {
             </button>
           </div>
 
-          {hasSet && (
-            <div className="checkout-cart-row" style={{ border: "none" }}>
-              <div style={{ color: "#dc2626", fontWeight: 600 }}>
-                You saved by buying the Set
-              </div>
-              <div style={{ color: "#dc2626", fontWeight: 600 }}>
-                -{CURRENCY} ${SET_SAVINGS}
-              </div>
-            </div>
-          )}
           <div className="checkout-cart-row" style={{ border: "none" }}>
             <div>Subtotal</div>
             <div>

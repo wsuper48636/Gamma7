@@ -15,7 +15,7 @@ export const PRODUCTS = {
     name: "Diagnostics of your energy field",
     price: "0.00",
     description:
-      "During your energy field assessment, we will explore key areas such as your life such as life purpose, relationships, and energy drains - identifying actionable steps to bring balance and improvement to your life.",
+      "During your energy field assessment, we will explore key areas of your life such as your life purpose, relationships, work-life balance and energy drains - identifying actionable steps and empowering you with clear insights to bring balance and improvement to your life.",
   },
 };
 
